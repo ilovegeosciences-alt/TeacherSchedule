@@ -3,7 +3,7 @@ name: Build APK from Zip
 on:
   push:
     branches: [ "main" ]
-  workflow_dispatch: # 允许你在网页上手动点击按钮运行
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,15 +11,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Unzip and Prepare Project
       run: |
-        # 解压你上传的压缩包到 project 文件夹
         unzip TeacherScheduleAndroid.zip -d ./project
-        # 进入解压后的目录。如果压缩包内还有一层文件夹，这里会报错，需要改成对应的路径，如 cd ./project/你的文件夹名
-        cd ./project
-        # 赋予 Gradle 执行权限
+        # 关键修改：进入正确的子文件夹
+        cd ./project/TeacherScheduleAndroid
         chmod +x gradlew
 
     - name: Set up JDK 17
@@ -29,12 +27,13 @@ jobs:
         distribution: 'temurin'
 
     - name: Build Debug APK
-      working-directory: ./project # 告诉系统在这个目录下执行编译
+      # 关键修改：指定编译的工作目录也是这个子文件夹
+      working-directory: ./project/TeacherScheduleAndroid
       run: ./gradlew assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        # 自动寻找编译生成的 apk 文件并上传
+        # 使用通配符查找 APK，这里保持不变，它能自动匹配到子文件夹里的结果
         path: ./project/**/build/outputs/apk/debug/*.apk
