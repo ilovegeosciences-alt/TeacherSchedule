@@ -16,8 +16,9 @@ jobs:
     - name: Unzip and Prepare Project
       run: |
         unzip TeacherScheduleAndroid.zip -d ./project
-        # 关键修改：进入正确的子文件夹
         cd ./project/TeacherScheduleAndroid
+        # 因为你的压缩包里没带 gradlew，这里使用服务器自带的 gradle 生成一份
+        gradle wrapper
         chmod +x gradlew
 
     - name: Set up JDK 17
@@ -27,7 +28,6 @@ jobs:
         distribution: 'temurin'
 
     - name: Build Debug APK
-      # 关键修改：指定编译的工作目录也是这个子文件夹
       working-directory: ./project/TeacherScheduleAndroid
       run: ./gradlew assembleDebug
 
@@ -35,5 +35,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        # 使用通配符查找 APK，这里保持不变，它能自动匹配到子文件夹里的结果
         path: ./project/**/build/outputs/apk/debug/*.apk
